@@ -1,6 +1,9 @@
 # data
 data/
 
+# model artifacts
+checkpoints/
+
 # python
 __pycache__/
 .venv/
