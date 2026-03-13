@@ -1,6 +1,6 @@
 # miniLLM
 
-A simple LLM built from scratch using JAX, which predicts the next words in a phrase.
+A simple LLM built using JAX, which predicts the next words in a phrase.
 
 ## Technology
 This project uses [UV](https://docs.astral.sh/uv/) as the package manager.
@@ -25,13 +25,21 @@ _* The next word might not be the one with the highest probability, depending on
 
 ## Setup
 
-### Install Dependencies
+### 1. Install Dependencies
 
 ```
 uv sync
 ```
 
-### Run Jupyter Notebooks
+### 2. Install Package in Editable Mode
+
+This permits import of modules from `src/` in notebooks and other modules like `from src.utils import some_function`.
+
+```
+uv pip install -e .
+```
+
+### 3. Run Jupyter Notebooks
 
 ```
 uv run jupyter notebook
@@ -42,8 +50,6 @@ uv run jupyter lab
 
 This will open Jupyter in your default browser at `http://localhost:8888`.
 
-_NB: I added a git filter that cleans up notebooks (e.g., removes outputs and execution counts) prior to committing._
-
 ### Run Test Suite
 
 ```
@@ -51,10 +57,18 @@ uv run pytest
 ```
 
 ## Project structure
-I'm using notebooks for development and will extract code to `src/` as it stabilizes.
+I'm using notebooks for development and am extracting code to `src/` (with test coverage) as code stabilizes.
 
-- **notebooks/**: Interactive notebooks for building out components
-- **src/**: Reusable Python modules extracted from notebooks
-- **tests/**: Unit and integration tests for src/ code
-- **data/**: Training data and processed datasets (gitignored)
-- **checkpoints/**: Under development; Saved model weights
+```
+miniLLM/
+│ 
+├── pyproject.toml       # UV dependencies and package configuration
+│ 
+├── checkpoints/         # saved model weights (gitignored)
+├── data/                # training data and processed datasets (gitignored)
+│ 
+├── notebooks/           # interactive notebooks for building out components*
+├── src/                 # reusable python modules extracted from notebooks
+└── tests/               # unit and integration tests for src/ code
+```
+_*I added a git filter to clean the notebooks prior to committing (e.g., removes outputs and execution counts)._
