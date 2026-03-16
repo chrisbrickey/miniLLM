@@ -39,7 +39,7 @@ This permits import of modules from `src/` in notebooks and other modules like `
 uv pip install -e .
 ```
 
-### 3. Run Jupyter Notebooks
+### 3. Launch Jupyter Notebooks
 
 ```
 uv run jupyter notebook
@@ -50,10 +50,22 @@ uv run jupyter lab
 
 This will open Jupyter in your default browser at `http://localhost:8888`.
 
-### Run Test Suite
+### 4. Run Test Suite
 
 ```
 uv run pytest
+```
+
+## Troubleshooting
+
+### Environment / PATH issues
+
+```
+# Delete the old venv
+rm -rf .venv
+
+# Recreate it with the correct paths
+uv sync
 ```
 
 ## Project structure

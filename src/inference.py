@@ -25,6 +25,11 @@ def generate_text(
         max_new_tokens: Maximum number of tokens to generate
         temperature: Sampling temperature (higher = more random)
 
+        NB: The delimiter serves different purposes during training vs inference
+            During training: Marks boundaries between stories in your dataset
+            During inference: Acts as a stop condition. If the model generates the end token,
+                it is signaling "I think this pararaph is complete".
+
     Returns:
         Generated text string including the start tokens
     """
@@ -44,6 +49,9 @@ def generate_text(
 
         next_token_logits = logits[0, actual_len - 1, :] / temperature
 
+        # TODO: Replace below with sample from the probability distribution
+        #   probs = jax.nn.softmax(next_token_logits)
+        #   next_token = int(jax.random.categorical(jax.random.PRNGKey(0), next_token_logits))
         next_token = int(jnp.argmax(next_token_logits))
 
         if next_token == end_token_id:
