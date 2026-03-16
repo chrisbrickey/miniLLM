@@ -4,6 +4,9 @@ data/
 # model artifacts
 checkpoints/
 
+# ui
+.gradio/
+
 # python
 __pycache__/
 .venv/
