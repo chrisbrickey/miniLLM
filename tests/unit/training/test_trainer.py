@@ -53,7 +53,7 @@ def _make_model() -> NanoLLM:
 
 def _make_config(**overrides: object) -> TrainingConfig:
     defaults = dict(
-        num_epochs=1,
+        epochs=1,
         batch_size=BATCH_SIZE,
         log_every_n_steps=2,
     )

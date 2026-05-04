@@ -22,7 +22,7 @@ FF_DIM = 16
 NUM_BLOCKS = 1
 BATCH_SIZE = 4
 N_BATCHES = 8
-NUM_EPOCHS = 2
+EPOCHS = 2
 SEED = 0
 
 
@@ -58,7 +58,7 @@ def _make_trainer(checkpoint_path: Path | None = None) -> Trainer:
         rngs=nnx.Rngs(SEED),
     )
     config = TrainingConfig(
-        num_epochs=NUM_EPOCHS,
+        epochs=EPOCHS,
         batch_size=BATCH_SIZE,
         log_every_n_steps=4,
     )

@@ -42,7 +42,7 @@ def run_cli(data_file: Path):
         base_argv = [
             "nanollm-train",
             "--data-file", str(data_file),
-            "--num-epochs", "1",
+            "--epochs", "1",
             "--batch-size", "2",
         ]
         argv = base_argv + list(extra_args)
@@ -68,7 +68,7 @@ class TestCliHappyPath:
             "nanollm-train",
             "--data-file", str(data_file),
             "--max-stories", "6",
-            "--num-epochs", "1",
+            "--epochs", "1",
             "--batch-size", "2",
             "--checkpoint", str(checkpoint_path),
         ]
@@ -82,9 +82,9 @@ class TestCliArguments:
         kwargs = run_cli("--batch-size", "8")
         assert kwargs["training_config"].batch_size == 8
 
-    def test_num_epochs(self, run_cli) -> None:
-        kwargs = run_cli("--num-epochs", "7")
-        assert kwargs["training_config"].num_epochs == 7
+    def test_epochs(self, run_cli) -> None:
+        kwargs = run_cli("--epochs", "7")
+        assert kwargs["training_config"].epochs == 7
 
     def test_max_stories(self, run_cli) -> None:
         kwargs = run_cli("--max-stories", "5")

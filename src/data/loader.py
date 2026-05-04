@@ -85,7 +85,6 @@ def preprocess_data(
     batch_size: int,
     maxlen: int,
     delimiter: str,
-    num_epochs: int = 1,
     shuffle: bool = False,
     seed: int = 42
 ) -> tuple[pygrain.DataLoader, int]:
@@ -97,7 +96,6 @@ def preprocess_data(
         batch_size: Batch size for training
         maxlen: Maximum sequence length
         delimiter: Delimiter string that marks end of text
-        num_epochs: Number of training epochs
         shuffle: Whether to shuffle the data
         seed: Random seed for reproducibility
 
@@ -121,12 +119,14 @@ def preprocess_data(
     dataset = StoryDataset(list_of_paragraphs, maxlen, delimiter)
 
     # Configure sampler with sharding support
+    #   num_epochs=1: one dataset pass per iteration; epoch repetition is the Trainer's responsibility
+    #   num_epochs is the variable name set by pygrain library, but its more like 'repititions per epoch'
     sampler = pygrain.IndexSampler(
         num_records=len(dataset),
         shuffle=shuffle,
         seed=seed,
         shard_options=pygrain.NoSharding(),
-        num_epochs=num_epochs,
+        num_epochs=1, # dataset repetitions per DataLoader pass (pygrain API)
     )
 
     # Create DataLoader with efficient batching

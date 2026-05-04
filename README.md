@@ -101,12 +101,13 @@ uv run nanollm-train --num-epochs 5 --batch-size 64 --checkpoint my_run.orbax
 | Flag | Description | Default |
 |------|-------------|---------|
 | `--batch-size` | Number of samples per training batch | `32` |
-| `--num-epochs` | Number of full passes through the training data | `3` |
+| `--epochs` | Number of full passes through the training data | `3` |
 | `--max-stories` | Maximum number of stories to load from the data file | `100` |
 | `--seed` | Random seed for reproducibility | `42` |
 | `--shuffle` / `--no-shuffle` | Enable or disable dataset shuffling | `False` |
-| `--checkpoint` | Path to save the training checkpoint | `checkpoints/nano_checkpoint.orbax` |
 | `--data-file` | Path to the training data file | `data/TinyStories-1000.txt` |
+| `--checkpoint` | Path to save the training checkpoint | `checkpoints/nano_checkpoint.orbax` |
+
 
 
 ### 3. [Optional] Launch jupyter notebooks

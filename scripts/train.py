@@ -5,7 +5,7 @@ CLI entry point for training nanoLLM.
 
 Usage:
     uv run nanollm-train
-    uv run nanollm-train --num-epochs 5 --batch-size 64 --checkpoint my_run.orbax
+    uv run nanollm-train --epochs 5 --batch-size 64 --checkpoint my_run.orbax
 """
 
 import argparse
@@ -38,7 +38,7 @@ _TOKENIZER_NAME = "gpt2"
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train nanoLLM from the command line.")
     parser.add_argument("--batch-size", type=int, default=None)
-    parser.add_argument("--num-epochs", type=int, default=None)
+    parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--max-stories", type=int, default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--shuffle", dest="shuffle", action="store_true")
@@ -61,8 +61,8 @@ def main() -> None:
     overrides: dict[str, object] = {}
     if args.batch_size is not None:
         overrides["batch_size"] = args.batch_size
-    if args.num_epochs is not None:
-        overrides["num_epochs"] = args.num_epochs
+    if args.epochs is not None:
+        overrides["epochs"] = args.epochs
     if args.max_stories is not None:
         overrides["max_stories"] = args.max_stories
     if args.seed is not None:
@@ -86,7 +86,7 @@ def main() -> None:
         "\tseed:        %d\n"
         "\tcheckpoint:  %s\n"
         f"{'-' * 30}\n\n",
-        data_file, config.max_stories, config.num_epochs,
+        data_file, config.max_stories, config.epochs,
         config.batch_size, config.shuffle, config.seed, checkpoint_path,
     )
 
@@ -104,7 +104,6 @@ def main() -> None:
             batch_size=config.batch_size,
             maxlen=model_config.maxlen,
             delimiter=tokenizer_config.delimiter,
-            num_epochs=config.num_epochs,
             shuffle=config.shuffle,
             seed=config.seed,
         )
