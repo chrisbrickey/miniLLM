@@ -182,7 +182,7 @@ class TestTrainingConfig:
         from src.config import TrainingConfig
 
         config = TrainingConfig(
-            num_epochs=3,
+            epochs=3,
             warmup_rate=0.1
         )
 
@@ -197,7 +197,7 @@ class TestTrainingConfig:
         from src.config import TrainingConfig
 
         config = TrainingConfig(
-            num_epochs=1,
+            epochs=1,
             warmup_rate=0.1
         )
 
@@ -214,7 +214,7 @@ class TestTrainingConfig:
         config = TrainingConfig()
 
         assert config.batch_size > 0
-        assert config.num_epochs > 0
+        assert config.epochs > 0
         assert 0.0 <= config.warmup_rate <= 1.0
         assert config.lr_peak_value > config.lr_init_value
         assert config.lr_peak_value > config.lr_end_value

@@ -55,7 +55,7 @@ class Trainer:
             lambda tokens: jnp.concatenate((tokens[1:], jnp.array([0])))
         )
 
-        for epoch in range(self.training_config.num_epochs):
+        for epoch in range(self.training_config.epochs):
             step = 0
             epoch_losses: list[float] = []
             for batch in self.dataloader:
@@ -76,7 +76,7 @@ class Trainer:
                     epoch_losses.append(loss_val)
                     logger.info(
                         "epoch %d/%d  step %d  loss=%.4f  lr=%.2e",
-                        epoch + 1, self.training_config.num_epochs, step + 1,
+                        epoch + 1, self.training_config.epochs, step + 1,
                         loss_val, float(current_learning_rate),
                     )
 
@@ -85,7 +85,7 @@ class Trainer:
             if epoch_losses:
                 logger.info(
                     "Epoch %d/%d complete — avg loss: %.4f",
-                    epoch + 1, self.training_config.num_epochs,
+                    epoch + 1, self.training_config.epochs,
                     sum(epoch_losses) / len(epoch_losses),
                 )
 

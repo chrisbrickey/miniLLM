@@ -13,7 +13,7 @@ class TrainingConfig:
     num_workers: int = 0  # Single process for experimentation
 
     # Training loop
-    num_epochs: int = 3
+    epochs: int = 3 # how many times the Trainer's outer loop iterates
 
     # Learning rate schedule
     lr_init_value: float = 0.0
@@ -37,7 +37,7 @@ class TrainingConfig:
         Returns:
             Tuple of (total_steps, warmup_steps)
         """
-        total_steps = batches_per_epoch * self.num_epochs
+        total_steps = batches_per_epoch * self.epochs
         warmup_steps = max(1, int(total_steps * self.warmup_rate))
         return total_steps, warmup_steps
 
