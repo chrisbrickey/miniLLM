@@ -14,12 +14,13 @@ START_TOKENS = [1, 2, 3]
 NEXT_TOKEN = 42
 END_TOKEN_ID = 99
 DELIMITER = "<|end|>"
+SEED = 0
 
 
 def _logits_for_token(token_id: int) -> np.ndarray:
-    """Return logits array where token_id has the highest score."""
-    logits = np.zeros((1, MAXLEN, VOCAB_SIZE))
-    logits[0, :, token_id] = 10.0
+    """Return logits array where token_id dominates so sampling is effectively deterministic."""
+    logits = np.full((1, MAXLEN, VOCAB_SIZE), -1e9)
+    logits[0, :, token_id] = 0.0
     return logits
 
 
@@ -52,7 +53,7 @@ class TestGenerateTextStopping:
             generate_text(
                 model=mock_model,
                 tokenizer_config=mock_tokenizer_config,
-                inference_config=InferenceConfig(max_new_tokens=10),
+                inference_config=InferenceConfig(max_new_tokens=10, seed=SEED),
                 start_tokens=START_TOKENS,
             )
 
@@ -67,7 +68,7 @@ class TestGenerateTextStopping:
             generate_text(
                 model=mock_model,
                 tokenizer_config=mock_tokenizer_config,
-                inference_config=InferenceConfig(max_new_tokens=max_new),
+                inference_config=InferenceConfig(max_new_tokens=max_new, seed=SEED),
                 start_tokens=START_TOKENS,
             )
 
@@ -84,7 +85,7 @@ class TestGenerateTextOutput:
             result = generate_text(
                 model=mock_model,
                 tokenizer_config=mock_tokenizer_config,
-                inference_config=InferenceConfig(max_new_tokens=3),
+                inference_config=InferenceConfig(max_new_tokens=3, seed=SEED),
                 start_tokens=START_TOKENS,
             )
 
@@ -99,7 +100,7 @@ class TestGenerateTextOutput:
         generate_text(
             model=mock_model,
             tokenizer_config=mock_tokenizer_config,
-            inference_config=InferenceConfig(max_new_tokens=max_new),
+            inference_config=InferenceConfig(max_new_tokens=max_new, seed=SEED),
             start_tokens=START_TOKENS,
         )
 
@@ -115,7 +116,7 @@ class TestGenerateTextPadding:
         generate_text(
             model=mock_model,
             tokenizer_config=mock_tokenizer_config,
-            inference_config=InferenceConfig(max_new_tokens=1),
+            inference_config=InferenceConfig(max_new_tokens=1, seed=SEED),
             start_tokens=START_TOKENS,  # len 3 < MAXLEN 10
         )
 

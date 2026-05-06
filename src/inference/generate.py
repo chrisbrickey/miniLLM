@@ -1,7 +1,9 @@
 """Text generation and inference utilities."""
 
 import logging
+import time
 
+import jax
 import jax.numpy as jnp
 
 from src.config import InferenceConfig, TokenizerConfig
@@ -22,7 +24,7 @@ def generate_text(
     Args:
         model: Trained NanoLLM model
         tokenizer_config: Tokenizer and delimiter (from the loaded checkpoint)
-        inference_config: Decoding behavior (max_new_tokens, temperature)
+        inference_config: Decoding behavior (max_new_tokens, temperature, seed)
         start_tokens: Initial token IDs to condition generation
 
     Returns:
@@ -34,13 +36,15 @@ def generate_text(
     end_token_id = tokenizer.encode(delimiter, allowed_special={delimiter})[0]
     max_new_tokens = inference_config.max_new_tokens
     temperature = inference_config.temperature
+    seed = inference_config.seed if inference_config.seed is not None else time.time_ns()
+    key = jax.random.key(seed)
 
     # Make a defensive copy of the input to avoid mutating the caller's list
     tokens = list(start_tokens)
 
     logger.info(
-        "Generating text: context=%d tokens, max_new_tokens=%d, temperature=%.2f",
-        len(start_tokens), max_new_tokens, temperature,
+        "Generating text: context=%d tokens, max_new_tokens=%d, temperature=%.2f, seed=%d",
+        len(start_tokens), max_new_tokens, temperature, seed,
     )
 
     for _ in range(max_new_tokens):
@@ -53,19 +57,19 @@ def generate_text(
 
         context_array = jnp.array(context)[None, :]
         logits = model(context_array)
-
         next_token_logits = logits[0, actual_len - 1, :] / temperature
 
-        # TODO: Replace greedy choice with sampling from the probability distribution
-        #   Current state (greedy): Always selects the single most probable token.
-        #   Deterministic, tends toward repetitive or degenerate output, and can loop.
-        #   Makes the temperature parameter effectively meaningless.
-        #
-        #   With sampling: Temperature becomes meaningful (higher = more random, lower = more conservative),
+        # Greedy version (initial approach): Always selects the single most probable token
+        #    Deterministic, tends toward repetitive or degenerate output, and can loop.
+        #    Makes the temperature parameter effectively meaningless.
+        # next_token = int(jnp.argmax(next_token_logits))
+
+
+        # Sampling version: Select next token using sampling from the probability distribution
+        #   Temperature becomes meaningful (higher = more random, lower = more conservative),
         #   output is varied, and the model behaves closer to the expectations of a real LLM.
-        #      key, subkey = jax.random.split(key)
-        #      next_token = int(jax.random.categorical(subkey, next_token_logits))
-        next_token = int(jnp.argmax(next_token_logits))
+        key, subkey = jax.random.split(key)
+        next_token = int(jax.random.categorical(subkey, next_token_logits))
 
         if next_token == end_token_id:
             logger.info(

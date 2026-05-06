@@ -101,8 +101,12 @@ class TestInferenceConfig:
         config = InferenceConfig()
         assert config.max_new_tokens > 0
         assert config.temperature > 0.0
+        assert config.seed is None
 
     def test_custom_values(self) -> None:
-        config = InferenceConfig(max_new_tokens=10, temperature=0.5)
-        assert config.max_new_tokens == 10
-        assert config.temperature == 0.5
+        max_new_tokens, temperature, seed = 10, 0.5, 42
+        config = InferenceConfig(max_new_tokens=max_new_tokens, temperature=temperature, seed=seed)
+
+        assert config.max_new_tokens == max_new_tokens
+        assert config.temperature == temperature
+        assert config.seed == seed
