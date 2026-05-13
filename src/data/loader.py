@@ -35,17 +35,15 @@ def load_text_from_file(
         ValueError: If the path attempts to escape the project root
     """
 
-    # Validate path is within project root
+    # Validate path
     file_path = validate_project_path(file_path)
-
     if not file_path.exists():
         raise FileNotFoundError(f"Data file not found: {file_path}")
 
     # Display path relative to project root for readability and privacy
     display_path = format_path_for_display(file_path)
-
     max_str = f"{max_paragraphs:,}" if max_paragraphs is not None else "all"
-    logger.info("Loading data from %s (max %s paragraphs)", display_path, max_str)
+    logger.info(f"Loading data from {display_path} (max {max_str} paragraphs)")
 
     paragraphs, current_paragraph = [], []
     with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
@@ -76,7 +74,7 @@ def load_text_from_file(
             if story_text:
                 paragraphs .append(story_text + delimiter)
 
-    logger.info("Loaded %s paragraphs", f"{len(paragraphs):,}")
+    logger.info(f"Loaded {len(paragraphs)} paragraphs")
     return paragraphs
 
 
@@ -106,20 +104,21 @@ def preprocess_data(
         ValueError: If no valid stories found in the dataset
     """
 
+    # Validate loaded data
     total_size = len(list_of_paragraphs)
     if total_size == 0:
         raise ValueError("No valid stories found in the dataset")
 
     # Calculate estimated batches per epoch
     estimated_batches_per_epoch = total_size // batch_size
-    logger.debug("Estimated batches per epoch: %s", f"{estimated_batches_per_epoch:,}")
+    logger.debug(f"Estimated batches per epoch: {estimated_batches_per_epoch}")
 
     # Create efficient dataset
     dataset = StoryDataset(list_of_paragraphs, maxlen, tokenizer_config)
 
     # Configure sampler with sharding support
-    #   num_epochs=1: one dataset pass per iteration; epoch repetition is the Trainer's responsibility
-    #   num_epochs is the variable name set by pygrain library, but its more like 'repititions per epoch'
+    #   num_epochs parameter here is required by the pygrain API and it is analogous to repetitions per epoch.
+    #   This variable is different than the 'epochs' of the outer training loop, which are set in Trainer class.
     sampler = pygrain.IndexSampler(
         num_records=len(dataset),
         shuffle=shuffle,
@@ -137,5 +136,5 @@ def preprocess_data(
         ]
     )
 
-    logger.debug("Created DataLoader with batch_size=%d, maxlen=%d", batch_size, maxlen)
+    logger.debug(f"Created DataLoader with batch_size={batch_size}, maxlen={maxlen}")
     return dataloader, estimated_batches_per_epoch
