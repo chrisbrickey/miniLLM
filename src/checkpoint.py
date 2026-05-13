@@ -50,7 +50,7 @@ def save_checkpoint(
         validated_path.mkdir(parents=True, exist_ok=True)
     except OSError as e:
         raise OSError(f"Failed to create checkpoint directory '{validated_path}': {e}") from e
-    logger.info("Saving checkpoint to %s", validated_path)
+    logger.info(f"Saving checkpoint to {validated_path}")
     checkpointer = ocp.PyTreeCheckpointer()
     weights_path = validated_path / "weights.orbax"
     checkpointer.save(weights_path.resolve(), nnx.state(model), force=force)
@@ -143,7 +143,7 @@ def apply_checkpoint(model: nnx.Module, path: Path) -> nnx.Module:
     if not weights_path.exists():
         raise FileNotFoundError(f"No weights found at {weights_path}")
 
-    logger.info("Loading checkpoint from %s", validated_path)
+    logger.info(f"Loading checkpoint from {validated_path}")
     checkpointer = ocp.PyTreeCheckpointer()
     try:
         restored_state = checkpointer.restore(weights_path, item=nnx.state(model))
@@ -179,26 +179,16 @@ def build_model_from_checkpoint(
         ValueError: metadata absent, or model_config/tokenizer_config missing from it.
     """
     validated_path = validate_project_path(path)
-    logger.info("Rebuilding model from checkpoint at %s", validated_path)
+    logger.info(f"Rebuilding model from checkpoint at {validated_path}")
 
+    # validate metadata
     metadata = load_metadata(validated_path)
     if metadata is None:
-        raise ValueError(
-            f"Cannot build model: no metadata found at '{validated_path}'."
-            f"{_MANUAL_LOAD_HINT}"
-        )
-
+        raise ValueError(f"Cannot build model: no metadata found at {validated_path}; {_MANUAL_LOAD_HINT}")
     if metadata.model_config is None:
-        raise ValueError(
-            f"metadata.json at '{validated_path}' is missing model_config. "
-            f"{_MANUAL_LOAD_HINT}"
-        )
-
+        raise ValueError(f"METADATA.json at {validated_path} is missing model_config; {_MANUAL_LOAD_HINT}")
     if metadata.tokenizer_config is None:
-        raise ValueError(
-            f"metadata.json at '{validated_path}' is missing tokenizer_config. "
-            f"{_MANUAL_LOAD_HINT}"
-        )
+        raise ValueError(f"METADATA.json at {validated_path} is missing tokenizer_config; {_MANUAL_LOAD_HINT}")
 
     # construct relevant configs
     model_config = ModelConfig(**metadata.model_config)
