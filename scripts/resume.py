@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 from src.checkpoint import (
-    build_model_from_checkpoint,
+    restore_from_checkpoint,
     get_latest_checkpoint,
 )
 from src.logging_setup import setup_logging
@@ -92,7 +92,7 @@ def main() -> None:
 
         # Load trained model
         logger.info(f"Loading checkpoint from {source_path}")
-        model, model_config, tokenizer_config = build_model_from_checkpoint(source_path)
+        model, tokenizer_config = restore_from_checkpoint(source_path)
         logger.info(f"Model ready ({count_params(model)} parameters)")
 
         # Pair the source with its cumulative epoch count in one step to avoid divergence

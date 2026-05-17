@@ -89,7 +89,7 @@ class TestResumeCliHappyPath:
 
 class TestResumeCliSourceCheckpointResolution:
     """Verifies that --checkpoint-source and its fallback (get_latest_checkpoint)
-    flow correctly into build_model_from_checkpoint. Trainer execution is
+    flow correctly into restore_from_checkpoint. Trainer execution is
     patched so these tests stay fast and don't write real bundles."""
 
     @pytest.fixture
@@ -97,12 +97,12 @@ class TestResumeCliSourceCheckpointResolution:
         """Patches downstream training so only the source-resolution path is exercised."""
 
         def _run(argv: list[str], *, latest: Path | None = None) -> MagicMock:
-            with patch("scripts.resume.build_model_from_checkpoint") as mock_build, \
+            with patch("scripts.resume.restore_from_checkpoint") as mock_build, \
                  patch("scripts.resume.ResumeContext.from_checkpoint") as mock_from_ckpt, \
                  patch("scripts.resume.get_latest_checkpoint", return_value=latest), \
                  patch("scripts.resume.count_params", return_value=0), \
                  patch("scripts.resume.Runner") as mock_runner_cls:
-                mock_build.return_value = (MagicMock(), MagicMock(), MagicMock())
+                mock_build.return_value = (MagicMock(), MagicMock())
                 mock_from_ckpt.return_value = MagicMock(
                     source=MagicMock(), previous_epochs_completed=3
                 )

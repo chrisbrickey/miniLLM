@@ -16,7 +16,7 @@ from pathlib import Path
 
 import flax.nnx as nnx
 
-from src.checkpoint import build_model_from_checkpoint, get_latest_checkpoints
+from src.checkpoint import restore_from_checkpoint, get_latest_checkpoints
 from src.compare import (
     DEFAULT_CHANGE_THRESHOLD,
     NORMS_COMPARISON_INTRO,
@@ -125,15 +125,17 @@ def main() -> None:
         )
 
         # Load both checkpoints
+        #   For this use case, we only need the model weights.
+        #   We can ignore the second entity returned, tokenizer_config.
         try:
-            model_before, _, _ = build_model_from_checkpoint(path_before)
+            model_before, _ = restore_from_checkpoint(path_before)
         except (FileNotFoundError, ValueError) as e:
             raise ValueError(
                 f"Failed to load 'before' checkpoint at '{path_before}': {e}"
             ) from e
 
         try:
-            model_after, _, _ = build_model_from_checkpoint(path_after)
+            model_after, _ = restore_from_checkpoint(path_after)
         except (FileNotFoundError, ValueError) as e:
             raise ValueError(
                 f"Failed to load 'after' checkpoint at '{path_after}': {e}"
