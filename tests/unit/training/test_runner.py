@@ -58,11 +58,11 @@ def _default_runner_kwargs(model: MagicMock | None = None) -> dict[str, object]:
     )
 
 
-def _run_default(**overrides: object) -> None:
+def _run_default(**overrides: object) -> MetricsHistory:
     """Construct a Runner with default kwargs (optionally overridden) and call .run()."""
     kwargs = _default_runner_kwargs()
     kwargs.update(overrides)
-    Runner(**kwargs).run()
+    return Runner(**kwargs).run()
 
 
 def _patch_pipeline(history: MetricsHistory | None = None):
@@ -140,6 +140,12 @@ class TestRunTrainerInvocation:
         with _patch_pipeline() as patched:
             _run_default()
             patched["Trainer"].return_value.train.assert_called_once()
+
+    def test_returns_metrics_history_from_trainer(self) -> None:
+        history = MetricsHistory(train_loss=[0.8, 0.5, 0.2])
+        with _patch_pipeline(history=history):
+            result = _run_default()
+        assert result == history
 
     def test_propagates_data_file_not_found(self) -> None:
         with patch("src.training.runner.load_text_from_file") as mock_load:
