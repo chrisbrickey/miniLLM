@@ -160,9 +160,9 @@ _MANUAL_LOAD_HINT = (
     "create ModelConfig() and NanoLLM(model_config), call apply_checkpoint(model, path)."
 )
 
-def build_model_from_checkpoint(
+def restore_from_checkpoint(
     path: Path,
-) -> tuple[NanoLLM, ModelConfig, TokenizerConfig]:
+) -> tuple[NanoLLM, TokenizerConfig]:
     """Build a NanoLLM and reconstruct its configs from a checkpoint bundle.
 
     Requires a complete metadata.json in the checkpoint bundle — both model_config
@@ -172,7 +172,11 @@ def build_model_from_checkpoint(
     Call apply_checkpoint() to restore weights and manually construct the configs.
 
     Returns:
-        Tuple of (model, model_config, tokenizer_config).
+        Tuple of (model, tokenizer_config). Access model_config via model.config.
+        Both elements are required for resumed training and for inference,
+        but we do not combine them into a single structure. Why? Models and
+        tokenizers should not be permanently coupled. We might want to retrain
+        the model using a different tokenizer in the future.
 
     Raises:
         FileNotFoundError: path or weights.orbax missing (delegated to apply_checkpoint).
@@ -198,4 +202,4 @@ def build_model_from_checkpoint(
     model = NanoLLM(model_config)
     apply_checkpoint(model, validated_path)
 
-    return model, model_config, tokenizer_config
+    return model, tokenizer_config

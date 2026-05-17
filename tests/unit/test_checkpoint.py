@@ -19,7 +19,7 @@ import pytest
 from src.checkpoint import (
     CheckpointMetadata,
     apply_checkpoint,
-    build_model_from_checkpoint,
+    restore_from_checkpoint,
     get_latest_checkpoint,
     get_latest_checkpoints,
     load_metadata,
@@ -314,16 +314,16 @@ class TestApplyCheckpoint:
 
 
 class TestBuildModelFromCheckpoint:
-    """Unit-level tests of build_model_from_checkpoint's metadata-validation
+    """Unit-level tests of restore_from_checkpoint's metadata-validation
     branches. The happy-path case (full reconstruction with real weights) is
     in tests/integration/test_checkpoint.py."""
 
     def test_raises_when_no_metadata(self, project_checkpoint_path: Path) -> None:
         # Bundle has weights.orbax (passes apply_checkpoint's existence check)
-        # but no metadata.json — build_model_from_checkpoint must reject early.
+        # but no metadata.json — restore_from_checkpoint must reject early.
         _make_bundle(project_checkpoint_path.parent, project_checkpoint_path.name)
         with pytest.raises(ValueError, match="no metadata"):
-            build_model_from_checkpoint(project_checkpoint_path)
+            restore_from_checkpoint(project_checkpoint_path)
 
     def test_raises_when_model_config_missing(
         self, project_checkpoint_path: Path
@@ -336,7 +336,7 @@ class TestBuildModelFromCheckpoint:
             },
         )
         with pytest.raises(ValueError, match="model_config"):
-            build_model_from_checkpoint(project_checkpoint_path)
+            restore_from_checkpoint(project_checkpoint_path)
 
     def test_raises_when_tokenizer_config_missing(
         self, project_checkpoint_path: Path
@@ -349,11 +349,11 @@ class TestBuildModelFromCheckpoint:
             },
         )
         with pytest.raises(ValueError, match="tokenizer_config"):
-            build_model_from_checkpoint(project_checkpoint_path)
+            restore_from_checkpoint(project_checkpoint_path)
 
     def test_rejects_path_outside_project(self) -> None:
         with pytest.raises(ValueError, match="outside the project root"):
-            build_model_from_checkpoint(Path("/tmp/outside"))
+            restore_from_checkpoint(Path("/tmp/outside"))
 
 
 class TestGetLatestCheckpoints:

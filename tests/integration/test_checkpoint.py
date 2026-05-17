@@ -17,7 +17,7 @@ import pytest
 from src.checkpoint import (
     CheckpointMetadata,
     apply_checkpoint,
-    build_model_from_checkpoint,
+    restore_from_checkpoint,
     save_checkpoint,
 )
 from src.config import ModelConfig, TokenizerConfig
@@ -88,10 +88,10 @@ class TestBuildModelFromCheckpoint:
         )
         save_checkpoint(original, project_checkpoint_path, metadata=metadata)
 
-        loaded_model, loaded_mc, loaded_tc = build_model_from_checkpoint(project_checkpoint_path)
+        loaded_model, loaded_tokenizer_config = restore_from_checkpoint(project_checkpoint_path)
 
-        assert loaded_mc == model_config
-        assert loaded_tc == tokenizer_config
+        assert loaded_model.config == model_config
+        assert loaded_tokenizer_config == tokenizer_config
         orig_leaves = jax.tree_util.tree_leaves(nnx.state(original))
         loaded_leaves = jax.tree_util.tree_leaves(nnx.state(loaded_model))
         assert all(jnp.allclose(a, b) for a, b in zip(orig_leaves, loaded_leaves))
