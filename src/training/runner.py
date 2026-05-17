@@ -62,7 +62,7 @@ class Runner:
         self.checkpoint_destination = checkpoint_destination
         self.resume_from = resume_from
 
-    def run(self) -> None:
+    def run(self) -> MetricsHistory:
         """Shared boilerplate for training pathways:
         loads data, preprocesses it, trains the model.
 
@@ -135,6 +135,8 @@ class Runner:
             metrics_history=metrics_history,
             cumulative_epochs_completed=cumulative_epochs_completed,
         )
+
+        return metrics_history
 
     # --- private methods ---
 
