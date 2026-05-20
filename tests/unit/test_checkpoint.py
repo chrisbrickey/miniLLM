@@ -19,6 +19,7 @@ import pytest
 from src.checkpoint import (
     CheckpointMetadata,
     apply_checkpoint,
+    load_resume_bundle,
     restore_from_checkpoint,
     get_latest_checkpoint,
     get_latest_checkpoints,
@@ -354,6 +355,64 @@ class TestBuildModelFromCheckpoint:
     def test_rejects_path_outside_project(self) -> None:
         with pytest.raises(ValueError, match="outside the project root"):
             restore_from_checkpoint(Path("/tmp/outside"))
+
+
+class TestLoadResumeBundle:
+    """Unit-level tests of load_resume_bundle's metadata-validation branches.
+    The happy-path (full reconstruction with real weights) lives in
+    tests/integration/test_checkpoint.py alongside restore_from_checkpoint."""
+
+    def test_raises_when_no_metadata(self, project_checkpoint_path: Path) -> None:
+        _make_bundle(project_checkpoint_path.parent, project_checkpoint_path.name)
+        with pytest.raises(ValueError, match="no metadata"):
+            load_resume_bundle(project_checkpoint_path)
+
+    def test_raises_when_model_config_missing(self, project_checkpoint_path: Path) -> None:
+        _write_metadata_json(
+            project_checkpoint_path,
+            {
+                "cumulative_epochs_completed": 1,
+                "tokenizer_config": SAMPLE_TOKENIZER_CONFIG,
+            },
+        )
+        with pytest.raises(ValueError, match="model_config"):
+            load_resume_bundle(project_checkpoint_path)
+
+    def test_raises_when_tokenizer_config_missing(self, project_checkpoint_path: Path) -> None:
+        _write_metadata_json(
+            project_checkpoint_path,
+            {
+                "cumulative_epochs_completed": 1,
+                "model_config": SAMPLE_MODEL_CONFIG_DICT,
+            },
+        )
+        with pytest.raises(ValueError, match="tokenizer_config"):
+            load_resume_bundle(project_checkpoint_path)
+
+    def test_rejects_path_outside_project(self) -> None:
+        with pytest.raises(ValueError, match="outside the project root"):
+            load_resume_bundle(Path("/tmp/outside"))
+
+    def test_returns_metadata_with_correct_epoch_count(
+        self,
+        project_checkpoint_path: Path,
+        patched_orbax: MagicMock,
+    ) -> None:
+        """Third return value carries the cumulative epoch count from metadata.json."""
+        _write_metadata_json(
+            project_checkpoint_path,
+            {
+                "cumulative_epochs_completed": 7,
+                "model_config": SAMPLE_MODEL_CONFIG_DICT,
+                "tokenizer_config": SAMPLE_TOKENIZER_CONFIG,
+            },
+        )
+        (project_checkpoint_path / "weights.orbax").mkdir()
+
+        with patch("src.checkpoint.apply_checkpoint"):
+            _, _, metadata = load_resume_bundle(project_checkpoint_path)
+
+        assert metadata.cumulative_epochs_completed == 7
 
 
 class TestGetLatestCheckpoints:

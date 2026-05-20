@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 from src.checkpoint import (
-    restore_from_checkpoint,
+    load_resume_bundle,
     get_latest_checkpoint,
 )
 from src.logging_setup import setup_logging
@@ -87,16 +87,16 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        # Retrieve and apply data from checkpoint bundle
-        # These methods look at both the standard orbax file structure and the non-standard json sidecar (METADATA.json).
-
-        # Load trained model
+        # Retrieve and apply data from checkpoint bundle.
+        # load_resume_bundle reads the bundle once, returning the model, tokenizer config,
+        # and metadata (which holds the cumulative epoch count) in a single pass.
         logger.info(f"Loading checkpoint from {source_path}")
-        model, tokenizer_config = restore_from_checkpoint(source_path)
+        model, tokenizer_config, metadata = load_resume_bundle(source_path)
         logger.info(f"Model ready ({count_params(model)} parameters)")
-
-        # Pair the source with its cumulative epoch count in one step to avoid divergence
-        resume_ctx = ResumeContext.from_checkpoint(source_path)
+        resume_ctx = ResumeContext(
+            source=source_path,
+            previous_epochs_completed=metadata.cumulative_epochs_completed,
+        )
     except Exception as e:
         logger.error(f"Failed to retrieve and apply data from checkpoint bundle: {e}")
         sys.exit(1)

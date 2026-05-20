@@ -173,23 +173,21 @@ _MANUAL_LOAD_HINT = (
     "create ModelConfig() and NanoLLM(model_config), call apply_checkpoint(model, path)."
 )
 
-def restore_from_checkpoint(
-    path: Path,
-) -> tuple[NanoLLM, TokenizerConfig]:
-    """Build a NanoLLM and reconstruct its configs from a checkpoint bundle.
+def restore_from_checkpoint(path: Path) -> tuple[NanoLLM, TokenizerConfig]:
+    """legacy method that returns only the loaded model and tokenizer_config from a checkpoint bundle."""
+    model, tokenizer_config, _ = load_resume_bundle(path)
+    return model, tokenizer_config
 
-    Requires a complete metadata.json in the checkpoint bundle — both model_config
-    and tokenizer_config must be present. Use this when rebuilding a model from scratch.
+def load_resume_bundle(path: Path) -> tuple[NanoLLM, TokenizerConfig, CheckpointMetadata]:
+    """Read all checkpoint metadata once, validate it, construct the model and configs.
 
-    If metadata is absent or incomplete, use the manual approach instead:
-    Call apply_checkpoint() to restore weights and manually construct the configs.
+    Requires a complete metadata.json in the checkpoint bundle. Both model_config and tokenizer_config
+    must be present. If metadata is absent or incomplete, use a more manual approach
+    (e.g., apply_checkpoint() to restore weights and then manually construct configs)
 
-    Returns:
-        Tuple of (model, tokenizer_config). Access model_config via model.config.
-        Both elements are required for resumed training and for inference,
-        but we do not combine them into a single structure. Why? Models and
-        tokenizers should not be permanently coupled. We might want to retrain
-        the model using a different tokenizer in the future.
+    All elements are required for resumed training and for inference, but we do not combine
+    them into a single structure. Why? Models and tokenizers should not be permanently coupled.
+    We might want to retrain the model using a different tokenizer in the future.
 
     Raises:
         FileNotFoundError: path or weights.orbax missing (delegated to apply_checkpoint).
@@ -215,4 +213,5 @@ def restore_from_checkpoint(
     model = NanoLLM(model_config)
     apply_checkpoint(model, validated_path)
 
-    return model, tokenizer_config
+    return model, tokenizer_config, metadata
+
